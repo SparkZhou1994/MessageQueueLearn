@@ -1,0 +1,14 @@
+server:
+  port: 8080
+spring:
+  kafka:
+    bootstrap-servers: 47.101.48.26:9092
+    producer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      batch-size: 65536
+      buffer-memory: 524288
+    consumer:
+      group-id: defaultGroup
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
