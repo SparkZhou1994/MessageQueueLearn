@@ -39,19 +39,19 @@ Keepalived | 1.2.13-5.el6_6.x86_64
 同理将192.168.4.151，192.168.4.152改为node2和node3  
 2. 修改host文件，以便局网内服务器间的访问，针对所有服务器（192.168.4.150，192.168.4.151，192.168.4.152，192.168.4.155，192.168.4.156）  
 `[root@node1 ~]# vi /etc/hosts`  
-添加所有node节点的ip地址映射关系，如下：  
+添加所有node节点的ip地址映射关系，如下：
 (```)
 192.168.4.150 node1  
 192.168.4.151 node2  
 192.168.4.152 node3  
 (```)
-3. 启用RabbitMQ的插件  
+3. 启用RabbitMQ的插件
 `[root@node1 ~]# rabbitmq-plugins enable rabbitmq_management`  
 4. 统一各个RabbitMQ节点的cookie，确保cookie的值相同，可通过复制的方式  
 `[root@node1 ~]# scp /var/lib/rabbitmq/.erlang.cookie root@node2:/var/lib/rabbitmq`  
 **确保此cookie文件权限为400**  
-同理，也复制一份至node3（192.168.4.152）  
-5. 重启所有RabbitMQ应用（192.168.4.150，192.168.4.151，192.168.4.152）  
+同理，也复制一份至node3（192.168.4.152）
+5. 重启所有RabbitMQ应用（192.168.4.150，192.168.4.151，192.168.4.152）
 (```)
 [root@node1 ~]# rabbitmqctl stop  
 [root@node1 ~]# rabbitmq-server –detached  
@@ -59,20 +59,20 @@ Keepalived | 1.2.13-5.el6_6.x86_64
 **--detached参数很重要**  
 6. RabbitMQ集群中从节点添加主节点  
 在本示例中（192.168.4.150不做操作）  
-在192.168.4.151服务器上操作如下：  
+在192.168.4.151服务器上操作如下：
 (```)
-[root@node2 ~]# rabbitmqctl stop_app  
+[root@node2 ~]# rabbitmqctl stop_app
 [root@node2 ~]# rabbitmqctl reset  
 [root@node2 ~]# rabbitmqctl join_cluster rabbit@node1  
-[root@node2 ~]# rabbitmqctl start_app  
+[root@node2 ~]# rabbitmqctl start_app
 (```)
 同理，在192.168.4.152服务器上添加 rabbit@node2  
 7. 查看节点是否成功添加  
 在各个RabbitMQ节点上运行：  
 `[root@node1 ~]# rabbitmqctl cluster_status`  
-如果看到其他节点，即表示节点添加成功  
+如果看到其他节点，即表示节点添加成功
 (```)
-Cluster status of node rabbit@node1 ...  
+Cluster status of node rabbit@node1 ...
 [{nodes,[{disc,[rabbit@node1,rabbit@node2,rabbit@node3]}]},  
  {running_nodes,[rabbit@node1]},  
  {cluster_name,<<"rabbit@localhost">>},   
@@ -98,23 +98,27 @@ Cluster status of node rabbit@node1 ...
 `[root@haproxy1 /]# vi /etc/haproxy/haproxy.cfg`  
 添加如下配置：
 # 配置haproxy管理界面，可登录[Haproxy管理界面](http://192.168.4.150:8100/stats)
-用户名/密码：admin/admin  
+用户名/密码：admin/admin
 (```)
-listen private_monitoring  
+listen private_monitoring
         bind 0.0.0.0:8100  
         mode http  
         option httplog  
         stats refresh 5s  
         stats uri /stats  
         stats realm Haproxy  
-        stats auth admin:admin  
-# 配置RabbitMQ管理控制台页面，可登录[RabbitMQ 管理控制台](http://192.168.4.150:8102)  进行查看  
-listen rabbitmq_admin  
+        stats auth admin:admin
+(```)
+### 配置RabbitMQ管理控制台页面，可登录[RabbitMQ 管理控制台](http://192.168.4.150:8102)  进行查看
+(```)
+listen rabbitmq_admin
         bind 0.0.0.0:8102  
         server node1 node1:15672  
         server node2 node2:15672  
-        server node3 node3:15672  
-# 配置RabbitMQ应用服务，服务地址[RabbitMQ 服务地址](192.168.4.150:8101)    
+        server node3 node3:15672
+(```)
+### 配置RabbitMQ应用服务，服务地址[RabbitMQ 服务地址](192.168.4.150:8101)
+(```)
 listen rabbitmq_cluster  
         bind 0.0.0.0:8101  
         mode    tcp  
@@ -124,12 +128,12 @@ listen rabbitmq_cluster
         timeout server  3h  
         server  node1  node1:5672  check  inter  5000  rise  2  fall  3  
         server  node2  node2:5672  check  inter  5000  rise  2  fall  3  
-        server  node3  node3:5672  check  inter  5000  rise  2  fall  3  
+        server  node3  node3:5672  check  inter  5000  rise  2  fall  3
 (```)
 4. 关闭防火墙
 (```)
-[root@haproxy1 /]# service iptables stop  
-[root@haproxy1 /]# chkconfig iptables off  
+[root@haproxy1 /]# service iptables stop
+[root@haproxy1 /]# chkconfig iptables off
 (```)
 5. 启动Haproxy
 `[root@haproxy1 /]# haproxy -f /etc/haproxy/haproxy.cfg`  
@@ -140,9 +144,9 @@ listen rabbitmq_cluster
 `[root@haproxy1 /]# cp /etc/keepalived/keepalived.conf /etc/keepalived/keepalived.conf.bk`  
 3. 修改配置文件  
 `[root@haproxy1 /]# vi /etc/keepalived/keepalived.conf`  
-对于haproyx1服务器（192.168.4.155），修改如下：  
+对于haproyx1服务器（192.168.4.155），修改如下：
 (```)
-global_defs {  
+global_defs {
    router_id LVS_DEVEL01  
 }  
 vrrp_instance VI_1 {  
@@ -158,13 +162,13 @@ vrrp_instance VI_1 {
     virtual_ipaddress {  
         192.168.4.160  
     }  
-}  
+}
 (```)
 注意Haproxy（主，192.168.4.155）的priority为100高于Haproxy（备，192.168.4.156），主备节点virtual_ipaddress配置的VIP要一致，router_id需要不同。  
 `[root@haproxy2 /]# vi /etc/keepalived/keepalived.conf`  
-对于haproyx2服务器（192.168.4.156），修改如下：  
-(```) 
-global_defs {  
+对于haproyx2服务器（192.168.4.156），修改如下：
+(```)
+global_defs {
    router_id LVS_DEVEL02  
 }  
 vrrp_instance VI_1 {  
@@ -180,7 +184,7 @@ vrrp_instance VI_1 {
     virtual_ipaddress {  
         192.168.4.160   
     }  
-}  
+}
 (```)
 4. 各个Haproxy节点启动Keepalived    
 `[root@haproxy1 /]# service keepalived start`  
