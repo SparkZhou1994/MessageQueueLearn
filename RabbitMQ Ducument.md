@@ -45,7 +45,7 @@ Keepalived | 1.2.13-5.el6_6.x86_64
 192.168.4.151 node2  
 192.168.4.152 node3  
 (```)
-3. 启用RabbitMQ的插件
+3. 启用RabbitMQ的插件  
 `[root@node1 ~]# rabbitmq-plugins enable rabbitmq_management`  
 4. 统一各个RabbitMQ节点的cookie，确保cookie的值相同，可通过复制的方式  
 `[root@node1 ~]# scp /var/lib/rabbitmq/.erlang.cookie root@node2:/var/lib/rabbitmq`  
@@ -70,7 +70,7 @@ Keepalived | 1.2.13-5.el6_6.x86_64
 7. 查看节点是否成功添加  
 在各个RabbitMQ节点上运行：  
 `[root@node1 ~]# rabbitmqctl cluster_status`  
-如果看到其他节点，即表示节点添加成功
+如果看到其他节点，即表示节点添加成功  
 (```)
 Cluster status of node rabbit@node1 ...
 [{nodes,[{disc,[rabbit@node1,rabbit@node2,rabbit@node3]}]},  
