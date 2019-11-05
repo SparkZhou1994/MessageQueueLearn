@@ -28,6 +28,14 @@ Haproxy | 1.5.18-1.el6.x86_64
 Keepalived | 1.2.13-5.el6_6.x86_64
 
 # 2 集群部署
+## 2.0 安装 RabbitMQ
+```
+rpm -ivh erlang-21.3.8.9-1.el6.x86_64
+wget http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+rpm -ivh epel-release-6-8.noarch.rpm
+vi /etc/yum.repos.d/epel.repo ***将baseurl的注释取消， mirrorlist注释掉***
+yum install socat
+```
 ## 2.1 RabbitMQ集群的连通
 
 已知RabbitMQ已经部署在各个服务器上（本示例的192.168.4.150，192.168.4.151，192.168.4.152），将单机应用进行集群化的步骤如下（以下步骤可切换root用户）：
@@ -88,6 +96,11 @@ Cluster status of node rabbit@node1 ...
 登录网址[RabbitMQ管理控制台](http://192.168.4.150:15672/)  
 看到Nodess栏有自己配置的节点即可  
 ![图1.2 RabbitMQ 管理控制台](https://github.com/SparkZhou1994/MessageQueueLearn/blob/master/RabbitMQ_Management.png "RabbitMQ 管理控制台")
+
+8. 策略配置
+```
+[root@node1 mq]# rabbitmqctl set_policy ha-all "^" '{"ha-mode":"all"}'
+```
 
 ## 2.2 Haproxy安装配置
 1. 安装Haproxy，同理在haproxy2（192.168.4.156）也进行安装  
@@ -172,7 +185,7 @@ global_defs {
    router_id LVS_DEVEL02  
 }  
 vrrp_instance VI_1 {  
-    state MASTER  
+    state BACKUP  
     interface eth0  
     virtual_router_id 51  
     priority 90  
